@@ -106,7 +106,7 @@ jobs:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         IMAGE_TAG: ${{ github.sha }}
       run: |
-        docker build -t $ECR_REGISTRY/${{ env.ECR_FRONTEND_REPO }}:$IMAGE_TAG -t $ECR_REGISTRY/${{ env.ECR_FRONTEND_REPO }}:latest ./front_despacho
+        docker build --build-arg NGINX_CONF=nginx.prod.conf -t $ECR_REGISTRY/${{ env.ECR_FRONTEND_REPO }}:$IMAGE_TAG -t $ECR_REGISTRY/${{ env.ECR_FRONTEND_REPO }}:latest ./front_despacho
         docker push $ECR_REGISTRY/${{ env.ECR_FRONTEND_REPO }} --all-tags
 
   deploy-to-ecs:

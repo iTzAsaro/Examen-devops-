@@ -52,6 +52,17 @@ Para levantar el entorno completo de desarrollo local con un solo comando:
 
 ---
 
+## ☁️ Acceso al Despliegue en la Nube (Producción AWS)
+
+La aplicación ha sido desplegada en un clúster de **Amazon ECS Fargate** y se conecta de forma segura a una base de datos relacional administrada **Amazon RDS MySQL**. 
+
+Puedes acceder a la versión productiva mediante los siguientes enlaces:
+* **Enlace de Producción (Frontend)**: [http://75.101.223.164](http://75.101.223.164)
+* **API de Ventas**: [http://75.101.223.164/api/v1/ventas](http://75.101.223.164/api/v1/ventas)
+* **API de Despachos**: [http://75.101.223.164/api/v1/despachos](http://75.101.223.164/api/v1/despachos)
+
+---
+
 ## ⛓️ Automatización CI/CD con GitHub Actions
 
 El pipeline está automatizado mediante la configuración en `.github/workflows/ci-cd.yml` y ejecuta el siguiente flujo al empujar cambios a las ramas `master` o `main`:

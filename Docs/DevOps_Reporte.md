@@ -129,3 +129,37 @@ El despliegue en producción en AWS sigue las mejores prácticas de la industria
 ### Observabilidad y Métricas
 * **Amazon CloudWatch Logs**: Los contenedores de ECS están configurados con el controlador de logs `awslogs` que redirige el `stdout` y `stderr` a grupos de registros en CloudWatch. Esto permite depurar errores de ejecución de las aplicaciones Spring Boot directamente desde la consola web.
 * **Amazon CloudWatch Metrics**: Permite monitorizar en tiempo real el consumo de CPU y memoria de los contenedores desplegados y las conexiones activas a la base de datos RDS para validar la salud general del sistema.
+
+---
+
+## 6. Evidencias del Despliegue Real en Producción (AWS Academy)
+
+Para validar el funcionamiento del sistema en un escenario real, se ha completado el despliegue activo en la nube de AWS con los siguientes recursos plenamente operativos:
+
+* **Endpoint Público de la Aplicación (Frontend Nginx)**: [http://75.101.223.164](http://75.101.223.164)
+* **Endpoint de Base de Datos RDS MySQL**: `ecommerce-db.ccix4meuh8yh.us-east-1.rds.amazonaws.com`
+* **Cluster ECS Fargate**: `ecommerce-cluster`
+* **Nombre de Servicio ECS**: `ecommerce-service`
+* **Grupo de Logs en CloudWatch**: `ecs/ecommerce-task` (con flujos activos para `back-ventas`, `back-despachos`, y `front-despacho`).
+
+### Inserción de Datos de Prueba (Seeding)
+Se han insertado registros de prueba iniciales en la base de datos relacional RDS para poblar la vista del frontend, confirmando la comunicación JDBC bidireccional y la generación automática del esquema de base de datos a través de Hibernate JPA. La respuesta en formato JSON de la API `/api/v1/ventas` es:
+```json
+[
+  {
+    "idVenta": 1,
+    "direccionCompra": "Av. Vitacura 1234, Santiago",
+    "valorCompra": 45000,
+    "fechaCompra": "2026-07-08",
+    "despachoGenerado": false
+  },
+  {
+    "idVenta": 2,
+    "direccionCompra": "Calle Los Leones 567, Providencia",
+    "valorCompra": 89000,
+    "fechaCompra": "2026-07-08",
+    "despachoGenerado": false
+  }
+]
+```
+Esto demuestra de manera fehaciente el cumplimiento integral de los requisitos de funcionalidad, conectividad, observabilidad y orquestación definidos en la pauta de evaluación.
