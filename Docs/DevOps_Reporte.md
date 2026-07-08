@@ -136,7 +136,7 @@ El despliegue en producción en AWS sigue las mejores prácticas de la industria
 
 Para validar el funcionamiento del sistema en un escenario real, se ha completado el despliegue activo en la nube de AWS con los siguientes recursos plenamente operativos:
 
-* **Endpoint Público de la Aplicación (Frontend Nginx)**: [http://75.101.223.164](http://75.101.223.164)
+* **Endpoint Público de la Aplicación (Frontend Nginx)**: [http://52.55.135.216](http://52.55.135.216)
 * **Endpoint de Base de Datos RDS MySQL**: `ecommerce-db.ccix4meuh8yh.us-east-1.rds.amazonaws.com`
 * **Cluster ECS Fargate**: `ecommerce-cluster`
 * **Nombre de Servicio ECS**: `ecommerce-service`
