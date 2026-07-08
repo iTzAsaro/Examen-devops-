@@ -6,7 +6,6 @@ dist-ssr/
 
 # Dependencias de Java y compilación
 **/target/
-.mvn/
 target/
 
 # Archivos de IDE y editores
