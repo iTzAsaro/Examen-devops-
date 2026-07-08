@@ -11,10 +11,8 @@ env:
   ECR_FRONTEND_REPO: front-despacho
   ECR_VENTAS_REPO: back-ventas
   ECR_DESPACHOS_REPO: back-despachos
-  ECS_CLUSTER: ecommerce-cluster           # Nombre del cluster de ECS
-  ECS_SERVICE_FRONTEND: front-service
-  ECS_SERVICE_VENTAS: ventas-service
-  ECS_SERVICE_DESPACHOS: despachos-service
+  ECS_CLUSTER: ecommerce-cluster           # Nombre del clúster de ECS
+  ECS_SERVICE: ecommerce-service           # Nombre del servicio unificado de producción Fargate
 
 jobs:
   build-and-test:
@@ -131,12 +129,7 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v2
 
-    # El siguiente bloque automatiza la actualización del servicio ECS
-    # Nota: Requiere que los servicios ECS y definiciones de tareas ya estén creados en la consola
+    # El siguiente bloque automatiza la actualización del servicio ECS Fargate unificado
     - name: Force ECS Deployment
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
       run: |
-        aws ecs update-service --cluster ${{ env.ECS_CLUSTER }} --service ${{ env.ECS_SERVICE_VENTAS }} --force-new-deployment
-        aws ecs update-service --cluster ${{ env.ECS_CLUSTER }} --service ${{ env.ECS_SERVICE_DESPACHOS }} --force-new-deployment
-        aws ecs update-service --cluster ${{ env.ECS_CLUSTER }} --service ${{ env.ECS_SERVICE_FRONTEND }} --force-new-deployment
+        aws ecs update-service --cluster ${{ env.ECS_CLUSTER }} --service ${{ env.ECS_SERVICE }} --force-new-deployment

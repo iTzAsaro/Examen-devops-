@@ -52,8 +52,8 @@ export const TableDespachos = () => {
               </thead>
               <tbody>
                 {despachos
-               
-                .map((despacho) => (
+                  .filter((despacho) => !despacho.despachado)
+                  .map((despacho) => (
                   <tr key={despacho.idDespacho}>
                     <td className="pr-10 py-10 items-center">{despacho.idDespacho}</td>
                     <td className="pr-10 py-10  items-center">
@@ -69,7 +69,7 @@ export const TableDespachos = () => {
                       {despacho.patenteCamion}
                     </td>
                     <td className="pr-10 py-10  items-center">
-                      {despacho.entregado
+                      {despacho.despachado
                         ? "Despacho entregado"
                         : "Despacho pendiente"}
                     </td>
