@@ -114,6 +114,14 @@ El despliegue en producción en AWS sigue las mejores prácticas de la industria
 1. **Frente a Despliegue Manual (EC2 única)**: Desplegar manualmente requiere configurar Docker, Nginx, firewalls y mantener el servidor. ECS Fargate proporciona **recuperación automática ante fallos** (si un contenedor falla, ECS lo destruye y levanta uno nuevo en segundos) y **escalabilidad automática** basada en el consumo de CPU o memoria sin intervención humana.
 2. **Frente a EKS (Kubernetes)**: EKS requiere un pago fijo mensual elevado (~$73 por el plano de control más las máquinas EC2 de los nodos), lo cual excedería el límite de $100 de la cuenta de estudiante en menos de dos días. ECS Fargate es de uso gratuito en su plano de control, y solo cobra por segundo el consumo de CPU y memoria de los contenedores activos, adaptándose idealmente al presupuesto del estudiante.
 
+### Escalabilidad y Configuración de Auto Scaling en ECS
+Para cumplir con la pauta de escalabilidad en entornos productivos, se ha implementado de forma activa **Application Auto Scaling (Service Auto Scaling)** sobre el servicio ECS:
+* **Mecanismo**: Escalamiento basado en consumo promedio de CPU (**Target Tracking Policy**).
+* **Umbral de CPU**: **70%** (si la carga supera el 70%, ECS levanta automáticamente más contenedores; si disminuye, los apaga ordenadamente).
+* **Límites de Tareas Fargate**:
+  * *Mínimo*: 1 tarea activa.
+  * *Máximo*: 3 tareas activas concurrentes (ajustado de forma segura para no exceder los límites de capacidad de la cuenta de estudiante de AWS Academy).
+
 ---
 
 ## 5. Seguridad y Observabilidad Básica
