@@ -1,7 +1,7 @@
 function Navbar() {
   return (
     <nav className="rounded-xl w-[250px] min-h-[880px] bg-teal-600 text-white sticky top-0 p-4 m-4">
-      <h2 className="text-xl font-bold mb-8">Ventas & Despachos v2 09/07/26</h2>
+      <h2 className="text-xl font-bold mb-8">Ventas & Despachos v2 10/07/26</h2>
 
       {/* Menú de navegación */}
       <ul className="space-y-3">
