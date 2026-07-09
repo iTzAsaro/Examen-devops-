@@ -16,51 +16,90 @@ La plataforma está diseñada bajo un enfoque de microservicios e integrada en u
 ### Diagrama de Arquitectura en la Nube (AWS)
 
 ```mermaid
-graph TD
-    %% Flujo de CI/CD
-    Dev[Desarrollador] -->|git push| GH[GitHub Actions Pipeline]
-    GH -->|1. Build & Push Images| ECR[(Amazon ECR)]
-    GH -->|2. Force Deployment| ECS_Cluster
+flowchart TB
+    subgraph CI_CD [1. Ciclo de Vida y CI/CD]
+        Dev([Desarrollador]) -->|git push| GH[GitHub Actions Pipeline]
+        subgraph Local [Entorno Local]
+            Compose[Docker Compose] -.->|Orquesta| CustomNet([app-network])
+            Compose -.->|Volumen persistente| LocalDB[(MySQL Local)]
+        end
+        
+        subgraph Pipeline [Pipeline de Integración y Despliegue]
+            GH -->|1. Test Unitarios| JUnit[Maven & JUnit <br> DB H2 en Memoria]
+            GH -->|2. Login AWS| Credentials[Temporal AWS Credentials<br>LabRole & Session Token]
+            GH -->|3. Build & Push| ECR[(Amazon ECR)]
+            GH -->|4. Deploy| ECS_Deploy[ECS update-service<br>--force-new-deployment]
+        end
+    end
 
-    %% Flujo de Usuario y Balanceo
-    User([Usuario Final]) -->|HTTP - Puerto 80| ALB[AWS Application Load Balancer]
+    subgraph Red [2. Tráfico de Red y Seguridad]
+        User([Usuario Final]) -->|HTTP - Puerto 80| IGW[Internet Gateway]
+        IGW -->|SG-ALB: Ingress 80/443| ALB[AWS Application Load Balancer]
+    end
 
-    subgraph VPC [AWS VPC - Red de Producción]
-        subgraph Subredes_Publicas [Subredes Públicas]
+    subgraph VPC [3. AWS VPC - Red de Producción]
+        subgraph Subredes_Pub [Subredes Públicas]
             ALB
         end
 
-        subgraph Subredes_Privadas [Subredes Privadas / Públicas]
-            subgraph ECS_Cluster [Amazon ECS Fargate Cluster]
-                subgraph Task_Def [ECS Fargate Task - Modo Red awsvpc]
-                    Front[front-despacho: Nginx Proxy<br>Puerto 80]
-                    Back_Ventas[back-ventas: Spring Boot<br>Puerto 8080]
-                    Back_Despachos[back-despachos: Spring Boot<br>Puerto 8081]
+        subgraph Subredes_Priv [Subredes Privadas / Cómputo]
+            subgraph ECS_Cluster [ECS Fargate Cluster]
+                subgraph Service [Servicio: ecommerce-service]
+                    subgraph Tasks [ECS Tasks - 1 a 3 réplicas concurrentes]
+                        subgraph Task_Def [ECS Fargate Task - Modo Red: awsvpc]
+                            direction TB
+                            Front[front-despacho: Nginx Proxy<br>Puerto 80]
+                            Back_Ventas[back-ventas: Spring Boot<br>Puerto 8080]
+                            Back_Despachos[back-despachos: Spring Boot<br>Puerto 8081]
+                        end
+                    end
                 end
             end
 
             subgraph RDS_Subnet [Subred de Base de Datos]
-                RDS_MySQL[(Amazon RDS MySQL<br>Puerto 3306)]
+                RDS_MySQL[(Amazon RDS MySQL Instance<br>ecommerce-db.ccix4me...)]
             end
         end
     end
 
-    %% Enrutamiento interno en la tarea
-    ALB -->|Redirige tráfico HTTP| Front
-    Front -->|Proxy Pass Loopback /api/v1/ventas/*| Back_Ventas
-    Front -->|Proxy Pass Loopback /api/v1/despachos/*| Back_Despachos
+    subgraph Observabilidad [4. Observabilidad y Escalabilidad]
+        subgraph CW [Amazon CloudWatch]
+            CW_Logs[(CloudWatch Log Group<br>ecs/ecommerce-task)]
+            CW_Alarms{CloudWatch Alarms<br>CPUUtilization}
+        end
+        
+        subgraph Scaling [Elastic Scaling]
+            ASG[Application Auto Scaling]
+        end
+    end
 
-    %% Conexiones de BD
-    Back_Ventas -->|Conexión JDBC| RDS_MySQL
-    Back_Despachos -->|Conexión JDBC| RDS_MySQL
+    %% Enrutamiento y Flujo de Datos
+    ALB -->|SG-ECS: Ingress Puerto 80| Front
+    Front -->|React Static Files| Front
+    Front -->|Proxy Pass Loopback 127.0.0.1:8080| Back_Ventas
+    Front -->|Proxy Pass Loopback 127.0.0.1:8081| Back_Despachos
 
-    %% Monitoreo y Escalabilidad
-    ECS_Cluster -->|Métricas CPU| CW[Amazon CloudWatch Alarms]
-    CW -->|Trigger Scaling 1 a 3 Tareas| ASG[Application Auto Scaling]
-    ASG -.->|Escala horizontalmente| Task_Def
-    
-    %% Logs
-    Task_Def -->|Log Driver awslogs| CW_Logs[CloudWatch Log Group<br>ecs/ecommerce-task]
+    %% Conexiones a Base de Datos
+    Back_Ventas -->|SG-RDS: Ingress Puerto 3306| RDS_MySQL
+    Back_Despachos -->|SG-RDS: Ingress Puerto 3306| RDS_MySQL
+
+    %% Lógica de Negocio RDS
+    RDS_MySQL -.->|Esquema 1| Schema1[(ventas_db)]
+    RDS_MySQL -.->|Esquema 2| Schema2[(despachos_db)]
+
+    %% Conexiones de CI/CD a ECS
+    ECR -.->|Pulls de Imágenes| Tasks
+    ECS_Deploy -.->|Actualiza Tarea| Service
+
+    %% Conexiones de Observabilidad
+    Task_Def -->|Log Driver: awslogs| CW_Logs
+    ECS_Cluster -->|Métricas de Cómputo| CW_Alarms
+    CW_Alarms -->|Alerta CPU > 70% o < 15%| ASG
+    ASG -->|Modifica desiredCount| Service
+
+    %% Conexión de verificación externa
+    CloudShell([AWS CloudShell]) -->|Stress Test: curl loops| ALB
+    CloudShell -->|Consultas Directas: mariadb105| RDS_MySQL
 ```
 
 ---
