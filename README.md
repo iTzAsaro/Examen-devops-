@@ -1,6 +1,6 @@
-# Plataforma de Ventas y Despachos - Proyecto DevOps (AWS Academy)
+# Plataforma de Ventas y Despachos - Proyecto DevOps (AWS Cloud)
 
-Este repositorio contiene la plataforma integrada de **Ventas** y **Despachos**, unificada en un monorepositorio con orquestación local en contenedores de Docker y despliegue continuo automatizado (CI/CD) a la nube de AWS (ECS Fargate + RDS MySQL) con una cuenta de estudiante de AWS Academy.
+Este repositorio contiene la plataforma integrada de **Ventas** y **Despachos**, unificada en un monorepositorio con orquestación local en contenedores de Docker y despliegue continuo automatizado (CI/CD) a la nube de AWS (ECS Fargate + RDS MySQL).
 
 ---
 
@@ -71,11 +71,11 @@ El pipeline está automatizado mediante la configuración en `.github/workflows/
 2. **Docker Build & Push**: Construye las imágenes Docker utilizando las directivas multi-etapa y las sube etiquetadas a **Amazon ECR**.
 3. **AWS ECS Deploy**: Actualiza el cluster ECS Fargate con la última versión de las imágenes de forma automática y transparente (Zero-Downtime deployment).
 
-### Configuración de Secretos en GitHub (AWS Academy / Cuenta de Estudiante)
-Debido a que las cuentas de AWS Academy proporcionan credenciales temporales que expiran, es necesario actualizar en GitHub Secrets los siguientes valores antes de ejecutar el pipeline:
+### Configuración de Secretos en GitHub (Credenciales Temporales de AWS)
+El pipeline requiere que se configuren en GitHub Secrets los siguientes secretos de AWS para permitir la autenticación temporal segura y la interacción con los servicios de AWS:
 * `AWS_ACCESS_KEY_ID`
 * `AWS_SECRET_ACCESS_KEY`
-* `AWS_SESSION_TOKEN` (Token temporal obligatorio en cuentas estudiantiles)
+* `AWS_SESSION_TOKEN` (Token temporal requerido cuando se utilizan accesos basados en roles/STS)
 
 ---
 

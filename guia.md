@@ -69,7 +69,7 @@ Para modificar el frontend y desplegar automáticamente la nueva versión:
    * Copia los valores de:
      * `aws_access_key_id`
      * `aws_secret_access_key`
-     * `aws_session_token` (Este token es obligatorio para cuentas de estudiante y expira cada 4 horas).
+     * `aws_session_token` (Este token es obligatorio cuando se utilizan credenciales temporales de corta duración y expira periódicamente).
    * Ve a tu repositorio de GitHub -> **Settings** -> **Secrets and variables** -> **Actions**.
    * Actualiza o crea los secretos con los nombres exactos:
      * `AWS_ACCESS_KEY_ID`

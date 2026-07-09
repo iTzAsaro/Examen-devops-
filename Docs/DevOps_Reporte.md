@@ -1,6 +1,6 @@
 # Informe Técnico del Proyecto DevOps: Contenedorización, Pipeline CI/CD y Arquitectura AWS
 
-Este informe técnico documenta el diseño, la implementación y la automatización del ciclo de vida del software para la plataforma de Ventas y Despachos. Se ha implementado un enfoque de ingeniería DevOps completo que abarca control de versiones, contenedorización local optimizada, automatización de integración y entrega continua (CI/CD) con GitHub Actions, y despliegue orquestado y endurecido en la nube de Amazon Web Services (AWS) utilizando una cuenta de estudiante de AWS Academy.
+Este informe técnico documenta el diseño, la implementación y la automatización del ciclo de vida del software para la plataforma de Ventas y Despachos. Se ha implementado un enfoque de ingeniería DevOps completo que abarca control de versiones, contenedorización local optimizada, automatización de integración y entrega continua (CI/CD) con GitHub Actions, y despliegue orquestado y endurecido en la nube de Amazon Web Services (AWS).
 
 ---
 
@@ -143,13 +143,13 @@ El ciclo de vida del software se automatiza completamente a través de GitHub Ac
 3. **Etapa 3: Deploy Automatizado en la Nube**:
    * Fuerza un despliegue (`update-service --force-new-deployment`) en el cluster ECS Fargate para descargar las últimas versiones de las imágenes de ECR y actualizar los contenedores de forma no disruptiva.
 
-### Gestión de Secretos en Cuentas de Estudiantes de AWS
-Las cuentas de AWS Academy (Learner Lab) utilizan tokens de sesión de corta duración que expiran cada 4 horas. El pipeline está adaptado a esta limitación y requiere la inyección de tres secretos en la configuración del repositorio de GitHub:
-* `AWS_ACCESS_KEY_ID`: ID de acceso temporal.
-* `AWS_SECRET_ACCESS_KEY`: Clave secreta temporal.
-* `AWS_SESSION_TOKEN`: Token de sesión requerido (obligatorio para cuentas Learner Lab/estudiantes).
+### Gestión de Secretos y Credenciales Temporales de AWS
+El pipeline está diseñado bajo los estándares del principio de mínimo privilegio y requiere la inyección de variables de entorno seguras en GitHub Secrets para autenticarse contra AWS de forma no persistente:
+* `AWS_ACCESS_KEY_ID`: ID de acceso temporal de AWS.
+* `AWS_SECRET_ACCESS_KEY`: Clave secreta temporal de AWS.
+* `AWS_SESSION_TOKEN`: Token de sesión de AWS, requerido cuando se utilizan accesos temporales federados o basados en roles a través del servicio AWS STS (Security Token Service).
 
-*Nota: Para que el pipeline CI/CD funcione, estos secretos se deben actualizar en GitHub con las credenciales que proporciona la consola de AWS Academy al iniciar el laboratorio.*
+*Nota: Estas variables se inyectan dinámicamente en el entorno del pipeline durante la ejecución de los flujos de integración y despliegue continuo, garantizando la rotación constante de credenciales.*
 
 ---
 
@@ -171,7 +171,7 @@ El despliegue en producción en AWS sigue las mejores prácticas de la industria
 
 ### Justificación de ECS frente a Despliegue Manual y EKS
 1. **Frente a Despliegue Manual (EC2 única)**: Desplegar manualmente requiere configurar Docker, Nginx, firewalls y mantener el servidor. ECS Fargate proporciona **recuperación automática ante fallos** (si un contenedor falla, ECS lo destruye y levanta uno nuevo en segundos) y **escalabilidad automática** basada en el consumo de CPU o memoria sin intervención humana.
-2. **Frente a EKS (Kubernetes)**: EKS requiere un pago fijo mensual elevado (~$73 por el plano de control más las máquinas EC2 de los nodos), lo cual excedería el límite de $100 de la cuenta de estudiante en menos de dos días. ECS Fargate es de uso gratuito en su plano de control, y solo cobra por segundo el consumo de CPU y memoria de los contenedores activos, adaptándose idealmente al presupuesto del estudiante.
+2. **Frente a EKS (Kubernetes)**: Aunque Amazon EKS es una excelente opción para arquitecturas masivas multi-cloud, introduce una complejidad operacional elevada (administración de APIs de Kubernetes, manifiestos YAML complejos, controladores de Ingress y perfiles de Fargate independientes). Al haber elegido AWS como arquitectura base, **Amazon ECS proporciona una integración 100% nativa con el ecosistema de AWS** (ECR, Application Load Balancers, CloudWatch Logs y IAM Roles) sin necesidad de configurar operadores externos ni controladores de red de terceros. Esto simplifica drásticamente el mantenimiento y reduce la sobrecarga cognitiva para gestionar la topología de microservices del proyecto.
 
 ### Escalabilidad y Configuración de Auto Scaling en ECS
 Para cumplir con la pauta de escalabilidad en entornos productivos, se ha implementado de forma activa **Application Auto Scaling (Service Auto Scaling)** sobre el servicio ECS:
@@ -179,7 +179,7 @@ Para cumplir con la pauta de escalabilidad en entornos productivos, se ha implem
 * **Umbral de CPU**: **70%** (si la carga supera el 70%, ECS levanta automáticamente más contenedores; si disminuye, los apaga ordenadamente).
 * **Límites de Tareas Fargate**:
   * *Mínimo*: 1 tarea activa.
-  * *Máximo*: 3 tareas activas concurrentes (ajustado de forma segura para no exceder los límites de capacidad de la cuenta de estudiante de AWS Academy).
+  * *Máximo*: 3 tareas activas concurrentes (ajustado de forma óptima para soportar picos de demanda del comercio electrónico bajo demanda sin incurrir en sobredimensionamiento innecesario de recursos).
 
 ---
 
