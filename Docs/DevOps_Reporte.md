@@ -17,30 +17,50 @@ La plataforma está diseñada bajo un enfoque de microservicios e integrada en u
 
 ```mermaid
 graph TD
+    %% Flujo de CI/CD
+    Dev[Desarrollador] -->|git push| GH[GitHub Actions Pipeline]
+    GH -->|1. Build & Push Images| ECR[(Amazon ECR)]
+    GH -->|2. Force Deployment| ECS_Cluster
+
+    %% Flujo de Usuario y Balanceo
     User([Usuario Final]) -->|HTTP - Puerto 80| ALB[AWS Application Load Balancer]
-    
+
     subgraph VPC [AWS VPC - Red de Producción]
-        subgraph Subred_Publica [Subredes Públicas]
+        subgraph Subredes_Publicas [Subredes Públicas]
             ALB
         end
-        subgraph Subred_Privada [Subredes Privadas]
-            subgraph ECS_Fargate [Amazon ECS Fargate Cluster]
-                Service_Front[Servicio Frontend - Nginx]
-                Service_Ventas[Servicio Ventas - Spring Boot]
-                Service_Despachos[Servicio Despachos - Spring Boot]
+
+        subgraph Subredes_Privadas [Subredes Privadas / Públicas]
+            subgraph ECS_Cluster [Amazon ECS Fargate Cluster]
+                subgraph Task_Def [ECS Fargate Task - Modo Red awsvpc]
+                    Front[front-despacho: Nginx Proxy<br>Puerto 80]
+                    Back_Ventas[back-ventas: Spring Boot<br>Puerto 8080]
+                    Back_Despachos[back-despachos: Spring Boot<br>Puerto 8081]
+                end
             end
+
             subgraph RDS_Subnet [Subred de Base de Datos]
-                RDS_MySQL[(Amazon RDS MySQL)]
+                RDS_MySQL[(Amazon RDS MySQL<br>Puerto 3306)]
             end
         end
     end
 
-    ALB -->|Rutas por defecto /| Service_Front
-    ALB -->|Ruta /api/v1/ventas/*| Service_Ventas
-    ALB -->|Ruta /api/v1/despachos/*| Service_Despachos
+    %% Enrutamiento interno en la tarea
+    ALB -->|Redirige tráfico HTTP| Front
+    Front -->|Proxy Pass Loopback /api/v1/ventas/*| Back_Ventas
+    Front -->|Proxy Pass Loopback /api/v1/despachos/*| Back_Despachos
 
-    Service_Ventas -->|Conexión JDBC - Puerto 3306| RDS_MySQL
-    Service_Despachos -->|Conexión JDBC - Puerto 3306| RDS_MySQL
+    %% Conexiones de BD
+    Back_Ventas -->|Conexión JDBC| RDS_MySQL
+    Back_Despachos -->|Conexión JDBC| RDS_MySQL
+
+    %% Monitoreo y Escalabilidad
+    ECS_Cluster -->|Métricas CPU| CW[Amazon CloudWatch Alarms]
+    CW -->|Trigger Scaling 1 a 3 Tareas| ASG[Application Auto Scaling]
+    ASG -.->|Escala horizontalmente| Task_Def
+    
+    %% Logs
+    Task_Def -->|Log Driver awslogs| CW_Logs[CloudWatch Log Group<br>ecs/ecommerce-task]
 ```
 
 ---
