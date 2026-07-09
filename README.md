@@ -57,9 +57,9 @@ Para levantar el entorno completo de desarrollo local con un solo comando:
 La aplicación ha sido desplegada en un clúster de **Amazon ECS Fargate** y se conecta de forma segura a una base de datos relacional administrada **Amazon RDS MySQL**. 
 
 Puedes acceder a la versión productiva mediante los siguientes enlaces:
-* **Enlace de Producción (Frontend)**: [http://52.55.135.216](http://52.55.135.216)
-* **API de Ventas**: [http://52.55.135.216/api/v1/ventas](http://52.55.135.216/api/v1/ventas)
-* **API de Despachos**: [http://52.55.135.216/api/v1/despachos](http://52.55.135.216/api/v1/despachos)
+* **Enlace de Producción (Frontend)**: [http://alb-ecommerce-647758726.us-east-1.elb.amazonaws.com](http://alb-ecommerce-647758726.us-east-1.elb.amazonaws.com)
+* **API de Ventas**: [http://alb-ecommerce-647758726.us-east-1.elb.amazonaws.com/api/v1/ventas](http://alb-ecommerce-647758726.us-east-1.elb.amazonaws.com/api/v1/ventas)
+* **API de Despachos**: [http://alb-ecommerce-647758726.us-east-1.elb.amazonaws.com/api/v1/despachos](http://alb-ecommerce-647758726.us-east-1.elb.amazonaws.com/api/v1/despachos)
 
 ---
 

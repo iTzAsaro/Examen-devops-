@@ -144,7 +144,7 @@ Para cumplir con la pauta de escalabilidad en entornos productivos, se ha implem
 
 Para validar el funcionamiento del sistema en un escenario real, se ha completado el despliegue activo en la nube de AWS con los siguientes recursos plenamente operativos:
 
-* **Endpoint Público de la Aplicación (Frontend Nginx)**: [http://52.55.135.216](http://52.55.135.216)
+* **Endpoint Público de la Aplicación (Frontend Nginx)**: [http://alb-ecommerce-647758726.us-east-1.elb.amazonaws.com](http://alb-ecommerce-647758726.us-east-1.elb.amazonaws.com)
 * **Endpoint de Base de Datos RDS MySQL**: `ecommerce-db.ccix4meuh8yh.us-east-1.rds.amazonaws.com`
 * **Cluster ECS Fargate**: `ecommerce-cluster`
 * **Nombre de Servicio ECS**: `ecommerce-service`
